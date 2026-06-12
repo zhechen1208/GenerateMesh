@@ -452,8 +452,8 @@ def boundary_groups(mesh: Mesh3D) -> Dict[str, List[int]]:
 def write_xml(
     path: str,
     mesh: Mesh3D,
-    num_modes: int = 4,
-    num_points: int = 5,
+    num_modes: int = 2,
+    num_points: int = 3,
     fields: str = "u,v,w,p",
     write_expansions: bool = True,
 ) -> None:

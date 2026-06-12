@@ -4,5 +4,5 @@
 0.5   ! r1hat 径向质心
 10.0  ! gama 域展向宽度 (>AR)
 0.05  ! thickRatio 厚度比
-0.08  ! cminRatio 端部最小弦长比
-6     ! N 圆角角度参数 (theta0=pi/N)
+0.02  ! cminRatio 端部最小弦长比
+10     ! N 圆角角度参数 (theta0=pi/N)

@@ -93,9 +93,9 @@ program main
 
 		thickness=0.01
 		alpha0=pai/30.0
-		! rad, omega, sigma now from shared_date_module / params.inc
-		dr1=0.008
-		dr2=5.0
+		! rad, omega, sigma, dr1_init, dr2_init from shared_date_module / params.inc
+		dr1=dr1_init
+		dr2=dr2_init
 		IF(.not. if_plate) then
 		! 	if(myid.eq.0) then
 		! 		open(14,file='fore_trailing.dat',status='old')

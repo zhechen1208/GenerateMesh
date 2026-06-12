@@ -16,6 +16,9 @@
 ! ---- O-mesh 截面半径 ----
       parameter (rad=30.0d0)
 
+! ---- 物面 / 远场第一层间距 ----
+      parameter (dr1_init=0.008d0,dr2_init=5.0d0)
+
 ! ---- 迭代控制 ----
       parameter (num_iter=100)          ! 外层迭代次数
       parameter (num_inner=300)         ! 内层迭代次数 (原 NMAX)

@@ -4,6 +4,7 @@ module shared_date_module
 	integer num_iter,num_inner
 	double precision span_length,domain_length
 	double precision rad,omega,sigma,dr1,dr2
+	double precision dr1_init,dr2_init
 	include 'params.inc'
 	double precision x0(imax,0:jmax,kmax),y0(imax,0:jmax,kmax),z0(imax,0:jmax,kmax) !网格坐标
 	double precision x1(imax,jmax),y1(imax,jmax)  !左边界网格坐标
