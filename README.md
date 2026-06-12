@@ -31,3 +31,19 @@
     make debug        # debug 版（-g -O0 -fcheck=all）
     make clean        # 清理编译产物
     bash scripts/plate.sh  # 平板内边界（备选）
+
+## XML 中 COMPOSITE 含义
+
+| C ID | 标签 | 说明 |
+|------|------|------|
+| C[0] | `wall` | 主 block 机翼物面 (i=0, k 在 kleft..kright) |
+| C[1] | `main_left_transition_wall` | 左过渡段物面 (i=0, k ≤ kleft) |
+| C[2] | `main_right_transition_wall` | 右过渡段物面 (i=0, k ≥ kright) |
+| C[3] | `left_tip_wall` | 左 tip block 物面 |
+| C[4] | `right_tip_wall` | 右 tip block 物面 |
+| C[5] | `farfield` | 远场 (i=imax) |
+| C[6] | `kmin` | 展向左端面 (k=0) |
+| C[7] | `kmax` | 展向右端面 (k=kmax) |
+| C[8] | `jmin` | 周向前端面 (j=0) |
+| C[9] | `jmax` | 周向后端面 (j=jmax) |
+| C[10] | `fluid` | 流体域 (所有 hex) |
