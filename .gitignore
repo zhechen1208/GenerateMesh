@@ -1,0 +1,26 @@
+# Build artifacts
+build/
+params.inc
+
+# Auto-backup
+.history/
+
+# Keep config template
+!beta_params.txt
+
+# Generated mesh output (large files)
+output/
+*.plt
+*.xml
+*.msh
+
+# Fortran modules
+*.mod
+*.o
+
+# Backup files
+*.bak
+
+# IDE / editor
+.vscode/
+.idea/

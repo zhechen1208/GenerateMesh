@@ -1,0 +1,8 @@
+41    ! jmax (自动调整为模4余1)
+91    ! kmax (奇数)
+4.0   ! AR 展弦比
+0.5   ! r1hat 径向质心
+10.0  ! gama 域展向宽度 (>AR)
+0.05  ! thickRatio 厚度比
+0.08  ! cminRatio 端部最小弦长比
+6     ! N 圆角角度参数 (theta0=pi/N)

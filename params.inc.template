@@ -1,0 +1,24 @@
+! ============================================================
+!  params.inc — GenerateMesh 网格参数
+!  复制为 params.inc 后再编辑：cp params.inc.template params.inc
+!  或由 beta.sh 自动生成。
+! ============================================================
+
+! ---- 网格规模 ----
+      parameter (imax=41,jmax=41,kmax=91)
+
+! ---- 机翼展向范围 & 圆弧参数 ----
+      parameter (kleft=24,kright=68,iarc=5)
+
+! ---- 展长 & 域长 ----
+      parameter (span_length=4.0d0,domain_length=40.0d0)
+
+! ---- O-mesh 截面半径 ----
+      parameter (rad=30.0d0)
+
+! ---- 迭代控制 ----
+      parameter (num_iter=100)          ! 外层迭代次数
+      parameter (num_inner=300)         ! 内层迭代次数 (原 NMAX)
+
+! ---- 松弛 & 光滑 ----
+      parameter (omega=1.30d0,sigma=0.02d0)
