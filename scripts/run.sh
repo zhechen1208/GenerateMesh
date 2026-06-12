@@ -21,12 +21,16 @@ fi
 make beta
 ./build/beta_function_wing 2>&1 | tee build/beta_output.log
 
-KLEFT=$(grep -oP 'kleft=\s*\K[0-9]+' build/beta_output.log | tail -1)
-KRIGHT=$(grep -oP 'kright=\s*\K[0-9]+' build/beta_output.log | tail -1)
-[[ -z "$KLEFT" || -z "$KRIGHT" ]] && { echo "Error: 未能解析 kleft/kright" >&2; exit 1; }
+KLEFT_RAW=$(grep -oP 'kleft=\s*\K[0-9]+' build/beta_output.log | tail -1)
+KRIGHT_RAW=$(grep -oP 'kright=\s*\K[0-9]+' build/beta_output.log | tail -1)
+[[ -z "$KLEFT_RAW" || -z "$KRIGHT_RAW" ]] && { echo "Error: 未能解析 kleft/kright" >&2; exit 1; }
+
+# mesh needs kleft+1, kright-1
+KLEFT=$((KLEFT_RAW + 1))
+KRIGHT=$((KRIGHT_RAW - 1))
 
 sed -i -E "s/kleft=[0-9]+,kright=[0-9]+/kleft=${KLEFT},kright=${KRIGHT}/" params.inc
-echo "params.inc: kleft=${KLEFT} kright=${KRIGHT}"
+echo "params.inc: kleft=${KLEFT} kright=${KRIGHT}  (beta: ${KLEFT_RAW} ${KRIGHT_RAW})"
 
 # ---- 2. mesh ----
 echo "=== [2/4] 编译并运行 mesh ==="

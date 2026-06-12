@@ -314,7 +314,12 @@ def build_zone(
     # Cell range. For closed j, j=nj-2 connects to duplicate seam j=nj-1 -> j=0.
     j_cells = zone.nj - 1
 
-    for k in range(zone.nk - 1):
+    # Detect reversed k-direction (e.g. left tip block goes inward).
+    # If k-reversed, reverse the loop so +k always maps to physical +z.
+    k_reversed = zone.nk > 1 and zone.p(0, 0, -1)[2] < zone.p(0, 0, 0)[2]
+    k_range = range(zone.nk - 2, -1, -1) if k_reversed else range(zone.nk - 1)
+
+    for k in k_range:
         for j in range(j_cells):
             jp = j + 1
             if zone.closed_j and jp == zone.nj - 1:
@@ -338,22 +343,25 @@ def build_zone(
                 tag_imin = zone_i_min_tag(zone, k, kleft, kright) if i == 0 else None
                 tag_imax = "farfield" if i == zone.ni - 2 else None
 
-                # Six quad faces following Nektar++/Gmsh hex face convention.
-                # Face 0: bottom (kmin), nodes 0-1-2-3
-                f_kmin = mesh.add_face_from_vertices([v000, v100, v110, v010], tag_kmin)
-                # Face 1: front (jmin), nodes 0-4-5-1
-                f_jmin = mesh.add_face_from_vertices([v000, v001, v101, v100], tag_jmin)
-                # Face 2: right (imax), nodes 1-5-6-2
-                f_imax = mesh.add_face_from_vertices([v100, v101, v111, v110], tag_imax)
-                # Face 3: back  (jmax), nodes 2-6-7-3
-                f_jmax = mesh.add_face_from_vertices([v110, v111, v011, v010], tag_jmax)
-                # Face 4: left  (imin), nodes 3-7-4-0
-                f_imin = mesh.add_face_from_vertices([v010, v011, v001, v000], tag_imin)
-                # Face 5: top   (kmax), nodes 4-7-6-5
-                f_kmax = mesh.add_face_from_vertices([v001, v011, v111, v101], tag_kmax)
-
-                # Nektar++ hex face order: bottom, front, right, back, left, top
-                mesh.add_hex([f_kmin, f_jmin, f_imax, f_jmax, f_imin, f_kmax])
+                # Face order depends on zone topology and k-direction.
+                # O-mesh or k-reversed: j-first → (j×i)·k positive.
+                # Cartesian with normal k:  i-first → (i×j)·k positive.
+                if zone.closed_j or k_reversed:
+                    f_kmin = mesh.add_face_from_vertices([v000, v010, v110, v100], tag_kmin)
+                    f_imin = mesh.add_face_from_vertices([v000, v010, v011, v001], tag_imin)
+                    f_jmax = mesh.add_face_from_vertices([v010, v110, v111, v011], tag_jmax)
+                    f_imax = mesh.add_face_from_vertices([v110, v100, v101, v111], tag_imax)
+                    f_jmin = mesh.add_face_from_vertices([v100, v000, v001, v101], tag_jmin)
+                    f_kmax = mesh.add_face_from_vertices([v001, v011, v111, v101], tag_kmax)
+                    mesh.add_hex([f_kmin, f_imin, f_jmax, f_imax, f_jmin, f_kmax])
+                else:
+                    f_kmin = mesh.add_face_from_vertices([v000, v100, v110, v010], tag_kmin)
+                    f_jmin = mesh.add_face_from_vertices([v000, v001, v101, v100], tag_jmin)
+                    f_imax = mesh.add_face_from_vertices([v100, v101, v111, v110], tag_imax)
+                    f_jmax = mesh.add_face_from_vertices([v110, v111, v011, v010], tag_jmax)
+                    f_imin = mesh.add_face_from_vertices([v010, v011, v001, v000], tag_imin)
+                    f_kmax = mesh.add_face_from_vertices([v001, v011, v111, v101], tag_kmax)
+                    mesh.add_hex([f_kmin, f_jmin, f_imax, f_jmax, f_imin, f_kmax])
 
 
 def boundary_groups(mesh: Mesh3D) -> Dict[str, List[int]]:
