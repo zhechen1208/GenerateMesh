@@ -41,8 +41,7 @@ python scripts/dat2xml.py \
     output/right_tip_block.dat \
     -o output/mesh.xml \
     --kleft "$KLEFT" --kright "$KRIGHT" \
-    --num-modes ${NUM_MODES:-2} --num-points ${NUM_POINTS:-3} \
-    --no-fix-negative
+    --num-modes ${NUM_MODES:-2} --num-points ${NUM_POINTS:-3}
 
 echo "=== [4/4] NekMesh 压缩 ==="
 NekMesh output/mesh.xml output/meshcomp.xml

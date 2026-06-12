@@ -25,8 +25,7 @@ Notes:
   1. This writes linear hex elements: every structured cell becomes one Nektar++ <H>.
   2. For Nektar++ production calculations, a coarser macro-element mesh with curved
      faces is usually preferable.
-  3. If Nektar++ reports negative Jacobians, try --no-fix-negative and inspect the
-     reported count, or adjust the hex face ordering in make_hex().
+  3. Vertex ordering uses j-flipped convention for right-handed hex elements.
 """
 
 from __future__ import annotations
@@ -63,7 +62,6 @@ class Zone:
 @dataclass
 class Mesh3D:
     tol: float = 1.0e-10
-    fix_negative: bool = True
 
     vertices: List[Point] = field(default_factory=list)
     edges: List[Tuple[int, int]] = field(default_factory=list)
@@ -75,9 +73,6 @@ class Mesh3D:
     face_map: Dict[FaceKey, int] = field(default_factory=dict)
     face_use_count: Dict[int, int] = field(default_factory=dict)
     face_tags: Dict[int, List[str]] = field(default_factory=dict)
-
-    negative_before_fix: int = 0
-    near_zero_jac: int = 0
 
     def coord_key(self, p: Point) -> Tuple[int, int, int]:
         if self.tol <= 0.0:
@@ -223,31 +218,6 @@ def detect_closed_j(zone: Zone, tol: float) -> bool:
     return maxdiff <= max(10.0 * tol, 1.0e-12)
 
 
-def vec(a: Point, b: Point) -> Point:
-    return (b[0] - a[0], b[1] - a[1], b[2] - a[2])
-
-
-def dot(a: Point, b: Point) -> float:
-    return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
-
-
-def cross(a: Point, b: Point) -> Point:
-    return (
-        a[1] * b[2] - a[2] * b[1],
-        a[2] * b[0] - a[0] * b[2],
-        a[0] * b[1] - a[1] * b[0],
-    )
-
-
-def signed_corner_jac(vertices: List[Point], vids: Sequence[int]) -> float:
-    # Use corner v0 and three local directions v1-v0, v3-v0, v4-v0.
-    p0 = vertices[vids[0]]
-    e_i = vec(p0, vertices[vids[1]])
-    e_j = vec(p0, vertices[vids[3]])
-    e_k = vec(p0, vertices[vids[4]])
-    return dot(cross(e_i, e_j), e_k)
-
-
 def compress_ids(ids: Iterable[int]) -> str:
     data = sorted(set(ids))
     if not data:
@@ -350,28 +320,15 @@ def build_zone(
             if zone.closed_j and jp == zone.nj - 1:
                 jp = 0
             for i in range(zone.ni - 1):
-                # Standard structured vertex order.
+                # Vertex order with j-flipped to match Nektar++ right-handed convention.
                 v000 = gid(i, j, k)
-                v100 = gid(i + 1, j, k)
-                v110 = gid(i + 1, jp, k)
                 v010 = gid(i, jp, k)
+                v110 = gid(i + 1, jp, k)
+                v100 = gid(i + 1, j, k)
                 v001 = gid(i, j, k + 1)
-                v101 = gid(i + 1, j, k + 1)
-                v111 = gid(i + 1, jp, k + 1)
                 v011 = gid(i, jp, k + 1)
-
-                verts = [v000, v100, v110, v010, v001, v101, v111, v011]
-                jac = signed_corner_jac(mesh.vertices, verts)
-                if abs(jac) <= 1.0e-24:
-                    mesh.near_zero_jac += 1
-                if jac < 0.0:
-                    mesh.negative_before_fix += 1
-                    if mesh.fix_negative:
-                        # Swap local j direction to make a positive corner Jacobian.
-                        # New order: v000, v010, v110, v100, v001, v011, v111, v101
-                        verts = [v000, v010, v110, v100, v001, v011, v111, v101]
-
-                v000, v100, v110, v010, v001, v101, v111, v011 = verts
+                v111 = gid(i + 1, jp, k + 1)
+                v101 = gid(i + 1, j, k + 1)
 
                 # Boundary tags are only used if the face is ultimately external.
                 tag_kmin = "kmin" if k == 0 else None
@@ -528,8 +485,6 @@ def write_xml(
     print(f"  external boundary faces: {sum(len(v) for v in bgroups.values())}")
     for name, ids in bgroups.items():
         print(f"    {name:8s}: {len(ids)}")
-    print(f"  negative corner Jacobians before fix: {mesh.negative_before_fix}")
-    print(f"  near-zero corner Jacobians:           {mesh.near_zero_jac}")
 
 
 def main() -> None:
@@ -540,14 +495,13 @@ def main() -> None:
     ap.add_argument("--open-j", action="store_true", help="Do not auto-detect/use j-periodic seam")
     ap.add_argument("--kleft", type=int, default=None, help="1-based kleft of the main block wall region")
     ap.add_argument("--kright", type=int, default=None, help="1-based kright of the main block wall region")
-    ap.add_argument("--no-fix-negative", action="store_true", help="Do not flip locally negative corner Jacobians")
     ap.add_argument("--num-modes", type=int, default=4, help="NUMMODES in each direction")
     ap.add_argument("--num-points", type=int, default=5, help="NUMPOINTS in each direction")
     ap.add_argument("--fields", default="u,v,w,p", help="Nektar++ fields list")
     ap.add_argument("--no-expansions", action="store_true", help="Do not write EXPANSIONS section")
     args = ap.parse_args()
 
-    mesh = Mesh3D(tol=args.tol, fix_negative=not args.no_fix_negative)
+    mesh = Mesh3D(tol=args.tol)
 
     for dat in args.dat_files:
         for z in read_tecplot_dat(dat):
