@@ -40,6 +40,7 @@ python scripts/dat2xml.py \
     output/left_tip_block.dat \
     output/right_tip_block.dat \
     -o output/mesh.xml \
+    --tol ${TOL:-1e-5} \
     --kleft "$KLEFT" --kright "$KRIGHT" \
     --num-modes ${NUM_MODES:-2} --num-points ${NUM_POINTS:-3}
 

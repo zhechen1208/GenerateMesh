@@ -21,7 +21,7 @@
     make mesh && mpirun -np 8 ./build/mesh     # 编译运行 mesh
     python scripts/dat2xml.py \                # 合并为 Nektar++ XML
         output/3d_mesh.dat output/left_tip_block.dat output/right_tip_block.dat \
-        -o output/mesh.xml --kleft 24 --kright 68 --no-fix-negative
+        -o output/mesh.xml --tol 1e-5 --kleft 24 --kright 68
 
 ## 常用命令
 
@@ -34,16 +34,12 @@
 
 ## XML 中 COMPOSITE 含义
 
+三个 mesh block 合并后共 5 个 composite：
+
 | C ID | 标签 | 说明 |
 |------|------|------|
-| C[0] | `wall` | 主 block 机翼物面 (i=0, k 在 kleft..kright) |
-| C[1] | `main_left_transition_wall` | 左过渡段物面 (i=0, k ≤ kleft) |
-| C[2] | `main_right_transition_wall` | 右过渡段物面 (i=0, k ≥ kright) |
-| C[3] | `left_tip_wall` | 左 tip block 物面 |
-| C[4] | `right_tip_wall` | 右 tip block 物面 |
-| C[5] | `farfield` | 远场 (i=imax) |
-| C[6] | `kmin` | 展向左端面 (k=0) |
-| C[7] | `kmax` | 展向右端面 (k=kmax) |
-| C[8] | `jmin` | 周向前端面 (j=0) |
-| C[9] | `jmax` | 周向后端面 (j=jmax) |
-| C[10] | `fluid` | 流体域 (所有 hex) |
+| C[0] | `wall` | 机翼物面 (i=0)，含主 block + tip block |
+| C[1] | `farfield` | 远场 (i=imax) |
+| C[2] | `kmin` | 展向左端面 (k=0) |
+| C[3] | `kmax` | 展向右端面 (k=kmax) |
+| C[4] | `fluid` | 流体域 (所有 hex) |
